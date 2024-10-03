@@ -17,7 +17,7 @@ metadata = MetaData(naming_convention=convention)
 db = SQLAlchemy(metadata=metadata)
 
 
-class Zookeeper(db.Model):
+class Zookeeper(db.Model,SerializerMixin):
     __tablename__ = 'zookeepers'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -25,9 +25,10 @@ class Zookeeper(db.Model):
     birthday = db.Column(db.Date)
 
     animals = db.relationship('Animal', back_populates='zookeeper')
+    serialize_rules = ('-animals.zookeeper',)
 
 
-class Enclosure(db.Model):
+class Enclosure(db.Model,SerializerMixin):
     __tablename__ = 'enclosures'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -37,7 +38,10 @@ class Enclosure(db.Model):
     animals = db.relationship('Animal', back_populates='enclosure')
 
 
-class Animal(db.Model):
+    serialize_rules = ('-animals.enclosure',)
+
+
+class Animal(db.Model,SerializerMixin):
     __tablename__ = 'animals'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -49,6 +53,8 @@ class Animal(db.Model):
 
     enclosure = db.relationship('Enclosure', back_populates='animals')
     zookeeper = db.relationship('Zookeeper', back_populates='animals')
+
+    serialize_rules = ('-zookeeper.animals', '-enclosure.animals',)
 
     def __repr__(self):
         return f'<Animal {self.name}, a {self.species}>'
